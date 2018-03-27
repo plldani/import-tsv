@@ -29,9 +29,11 @@ public class importTSV {
      * @throws java.io.IOException
      */
     private String[] atributos;
+    private HashMap<String, String> objetoJson;
     private String fileOrigen;
     private String fileDestino;
     private BufferedWriter writer_a;
+    private int numAtributosFallidos = 0;
 
     public importTSV(String origen) {
 
@@ -46,6 +48,8 @@ public class importTSV {
         try (BufferedReader br = new BufferedReader(new FileReader(this.fileOrigen))) {
             String line = br.readLine();
             this.atributos = line.split("\t");
+            
+            this.objetoJson = new HashMap();
         }
 
     }
@@ -56,28 +60,24 @@ public class importTSV {
         }
     }
 
-    private void createJsonObject(String[] valores) throws IOException {
+    
+    private boolean numeroAtributos(String[] valores){
         if (valores.length != atributos.length) {
-            System.err.println("Número de atributos incorrecto");
-        } else {
-
+            this.numAtributosFallidos++;
+            return false;
+        }else return true;
+    }
+    
+    private void createJsonObject(String[] valores) throws IOException {
             Gson gson = new Gson();
-            HashMap<String, String> objetoJson = new HashMap();
-
             for (int i = 0; i < atributos.length; i++) {
                 objetoJson.put(atributos[i], valores[i]);
             }
             String jsonString = gson.toJson(objetoJson);
-            //System.out.println(jsonString);
-
             writeToFile(jsonString);
-
-        }
-
     }
 
     private void writeToFile(String s) throws IOException {
-
         writer_a.append(s);
         writer_a.append(System.getProperty("line.separator"));
 
@@ -99,7 +99,7 @@ public class importTSV {
             String line = br.readLine();
             this.atributos = line.split("\t");
 
-            Path file = Paths.get("Output.json");
+            Path file = Paths.get(destino);
 
             writer_a = Files.newBufferedWriter(file, Charset.forName("UTF-8"), StandardOpenOption.CREATE);
             writer_a.append("[" + System.getProperty("line.separator"));
@@ -107,8 +107,10 @@ public class importTSV {
             line = br.readLine();
             while (line != null) {
                 String[] valores = line.split("\t");
-                createJsonObject(valores);
-                line = br.readLine();
+                if (numeroAtributos(valores)) {
+                    createJsonObject(valores);
+                    line = br.readLine();
+                }
             }
             writer_a.append(System.getProperty("line.separator") + "]");
             writer_a.close();
@@ -119,7 +121,7 @@ public class importTSV {
         importTSV prueba = new importTSV("W:\\EscritorioDatos\\data.tsv", "");
         prueba.setAtributos();
         prueba.getAtributos();
-        //prueba.serialize("Destino");
+        prueba.serialize("W:\\EscritorioDatos\\prueba.json");
 
     }
 }
