@@ -48,7 +48,7 @@ public class importTSV {
         try (BufferedReader br = new BufferedReader(new FileReader(this.fileOrigen))) {
             String line = br.readLine();
             this.atributos = line.split("\t");
-            
+
             this.objetoJson = new HashMap();
         }
 
@@ -60,21 +60,22 @@ public class importTSV {
         }
     }
 
-    
-    private boolean numeroAtributos(String[] valores){
+    private boolean numeroAtributos(String[] valores) {
         if (valores.length != atributos.length) {
             this.numAtributosFallidos++;
             return false;
-        }else return true;
+        } else {
+            return true;
+        }
     }
-    
+
     private void createJsonObject(String[] valores) throws IOException {
-            Gson gson = new Gson();
-            for (int i = 0; i < atributos.length; i++) {
-                objetoJson.put(atributos[i], valores[i]);
-            }
-            String jsonString = gson.toJson(objetoJson);
-            writeToFile(jsonString);
+        Gson gson = new Gson();
+        for (int i = 0; i < atributos.length; i++) {
+            objetoJson.put(atributos[i], valores[i]);
+        }
+        String jsonString = gson.toJson(objetoJson);
+        writeToFile(jsonString);
     }
 
     private void writeToFile(String s) throws IOException {
@@ -94,7 +95,7 @@ public class importTSV {
 
     }
 
-    private void serialize(String destino) throws IOException {
+    public void serialize(String destino) throws IOException {
         try (BufferedReader br = new BufferedReader(new FileReader(fileOrigen))) {
             String line = br.readLine();
             this.atributos = line.split("\t");
@@ -109,11 +110,26 @@ public class importTSV {
                 String[] valores = line.split("\t");
                 if (numeroAtributos(valores)) {
                     createJsonObject(valores);
-                    line = br.readLine();
                 }
+                line = br.readLine();
             }
             writer_a.append(System.getProperty("line.separator") + "]");
             writer_a.close();
+        }
+    }
+
+    public void partialRead(int numLines) throws IOException {
+        try (BufferedReader br = new BufferedReader(new FileReader(fileOrigen))) {
+            String line = br.readLine();
+            System.out.println("");
+            
+            while (line != null && numLines != 0) {
+
+                System.out.println(line);
+                line = br.readLine();
+                numLines--;
+                
+            }
         }
     }
 
@@ -121,7 +137,8 @@ public class importTSV {
         importTSV prueba = new importTSV("W:\\EscritorioDatos\\data.tsv", "");
         prueba.setAtributos();
         prueba.getAtributos();
-        prueba.serialize("W:\\EscritorioDatos\\prueba.json");
+        //prueba.serialize("W:\\EscritorioDatos\\prueba.json");
+        prueba.partialRead(15);
 
     }
 }
